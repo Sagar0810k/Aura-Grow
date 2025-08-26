@@ -210,7 +210,7 @@ export function AIRecommendations() {
         <div className="mt-3 flex justify-center">
           <div className="bg-blue-50 dark:bg-blue-950/20 px-3 py-1 rounded-full">
             <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
-              🧠 Local ML Processing • No API Required
+              Local ML Processing
             </span>
           </div>
         </div>

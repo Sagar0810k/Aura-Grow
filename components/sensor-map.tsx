@@ -54,11 +54,14 @@ export function SensorMap({ sensors }: SensorMapProps) {
 
         console.log("[v0] Initializing map with center coordinates:", centerCoords)
 
-        mapInstanceRef.current = L.map(mapRef.current).setView(centerCoords, 13)
+        // 1. Disable the attribution control here
+        mapInstanceRef.current = L.map(mapRef.current, {
+          attributionControl: false,
+        }).setView(centerCoords, 13)
 
-        // Add tile layer
+        // 2. Add tile layer with no attribution
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: "© OpenStreetMap contributors",
+          attribution: "", // Set attribution to an empty string
         }).addTo(mapInstanceRef.current)
 
         const universityCoords: [number, number] = [29.375055, 79.5313]
@@ -118,7 +121,7 @@ export function SensorMap({ sensors }: SensorMapProps) {
         `)
 
         validSensors.forEach((sensor) => {
-          console.log("[v0] Adding marker for sensor:", sensor.name, "at coordinates:", sensor.coordinates)
+          console.log("Adding marker for sensor:", sensor.name, "at coordinates:", sensor.coordinates)
 
           const getMarkerColor = (status: string) => {
             switch (status) {
