@@ -38,18 +38,58 @@ export function SensorMap({ sensors }: SensorMapProps) {
       }
 
       if (mapRef.current && !mapInstanceRef.current) {
-        // Initialize map centered on the first sensor or default location
-        const centerCoords = sensors.length > 0 ? sensors[0].coordinates : [29.375055, 79.531300]
+        const validSensors = sensors.filter(
+          (sensor) =>
+            sensor.coordinates &&
+            Array.isArray(sensor.coordinates) &&
+            sensor.coordinates.length === 2 &&
+            typeof sensor.coordinates[0] === "number" &&
+            typeof sensor.coordinates[1] === "number" &&
+            !isNaN(sensor.coordinates[0]) &&
+            !isNaN(sensor.coordinates[1]),
+        )
 
-        mapInstanceRef.current = L.map(mapRef.current).setView(centerCoords, 13)
+        // Initialize map centered on the first valid sensor or default location
+        const centerCoords = validSensors.length > 0 ? validSensors[0].coordinates : [29.375055, 79.5313]
+
+        console.log("[v0] Initializing map with center coordinates:", centerCoords)
+
+        mapInstanceRef.current = L.map(mapRef.current, { attributionControl: false }).setView(centerCoords, 13)
 
         // Add tile layer
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: "© OpenStreetMap contributors",
         }).addTo(mapInstanceRef.current)
 
-        // Add sensor markers
-        sensors.forEach((sensor) => {
+        // Add the new marker for Graphic Era Hill University
+        const gehuCoordinates = [29.375055, 79.5312] // Adjusted longitude to shift left
+        const gehuIcon = L.divIcon({
+          html: `<div style="
+            background-color: #007bff;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 3px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            font-weight: bold;
+          ">
+            🎓
+          </div>`,
+          className: "university-marker",
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+        })
+
+        const gehuMarker = L.marker(gehuCoordinates, { icon: gehuIcon }).addTo(mapInstanceRef.current)
+        gehuMarker.bindPopup("<b>Graphic Era Hill University, Bhimtal Campus</b>")
+
+        validSensors.forEach((sensor) => {
+          console.log("[v0] Adding marker for sensor:", sensor.name, "at coordinates:", sensor.coordinates)
+
           const getMarkerColor = (status: string) => {
             switch (status) {
               case "low":
@@ -123,11 +163,16 @@ export function SensorMap({ sensors }: SensorMapProps) {
           marker.bindPopup(popupContent)
         })
 
-        // Fit map to show all sensors
-        if (sensors.length > 1) {
-          const group = new L.featureGroup(sensors.map((sensor) => L.marker(sensor.coordinates)))
-          mapInstanceRef.current.fitBounds(group.getBounds().pad(0.1))
+        if (validSensors.length > 1) {
+          try {
+            const group = new L.featureGroup(validSensors.map((sensor) => L.marker(sensor.coordinates)))
+            mapInstanceRef.current.fitBounds(group.getBounds().pad(0.1))
+          } catch (error) {
+            console.log("[v0] Error fitting bounds, using default view:", error)
+          }
         }
+
+        console.log("[v0] Map initialized successfully with", validSensors.length, "valid sensors")
       }
     }
 
