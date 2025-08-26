@@ -49,3 +49,5 @@ export function SensorChart({ data }: SensorChartProps) {
     </div>
   )
 }
+
+

@@ -54,38 +54,68 @@ export function SensorMap({ sensors }: SensorMapProps) {
 
         console.log("[v0] Initializing map with center coordinates:", centerCoords)
 
-        mapInstanceRef.current = L.map(mapRef.current, { attributionControl: false }).setView(centerCoords, 13)
+        mapInstanceRef.current = L.map(mapRef.current).setView(centerCoords, 13)
 
         // Add tile layer
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: "© OpenStreetMap contributors",
         }).addTo(mapInstanceRef.current)
 
-        // Add the new marker for Graphic Era Hill University
-        const gehuCoordinates = [29.375055, 79.5312] // Adjusted longitude to shift left
-        const gehuIcon = L.divIcon({
-          html: `<div style="
-            background-color: #007bff;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            border: 3px solid white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            font-weight: bold;
-          ">
-            🎓
-          </div>`,
+        const universityCoords: [number, number] = [29.375055, 79.5313]
+        const universityIcon = L.divIcon({
+          html: `
+            <div style="
+              background: linear-gradient(135deg, #1e40af, #3b82f6);
+              width: 40px;
+              height: 40px;
+              border-radius: 8px;
+              border: 3px solid white;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 16px;
+              box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+              position: relative;
+            ">
+              🏛️
+              <div style="
+                position: absolute;
+                bottom: -8px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 0;
+                height: 0;
+                border-left: 6px solid transparent;
+                border-right: 6px solid transparent;
+                border-top: 8px solid white;
+              "></div>
+            </div>
+          `,
           className: "university-marker",
-          iconSize: [30, 30],
-          iconAnchor: [15, 15],
+          iconSize: [40, 48],
+          iconAnchor: [20, 48],
         })
 
-        const gehuMarker = L.marker(gehuCoordinates, { icon: gehuIcon }).addTo(mapInstanceRef.current)
-        gehuMarker.bindPopup("<b>Graphic Era Hill University, Bhimtal Campus</b>")
+        const universityMarker = L.marker(universityCoords, { icon: universityIcon }).addTo(mapInstanceRef.current)
+
+        universityMarker.bindPopup(`
+          <div style="min-width: 250px; text-align: center;">
+            <h3 style="margin: 0 0 12px 0; font-weight: bold; color: #1e40af;">🏛️ Graphic Era Hill University</h3>
+            <p style="margin: 4px 0; font-weight: 600;">Bhimtal Campus</p>
+            <p style="margin: 8px 0; color: #666;">Sensor Network Hub</p>
+            <div style="
+              background: linear-gradient(135deg, #eff6ff, #dbeafe);
+              padding: 8px;
+              border-radius: 6px;
+              margin-top: 8px;
+              border-left: 4px solid #3b82f6;
+            ">
+              <p style="margin: 2px 0; font-size: 12px;"><strong>Location:</strong> Bhimtal, Uttarakhand</p>
+              <p style="margin: 2px 0; font-size: 12px;"><strong>Coordinates:</strong> ${universityCoords[0]}, ${universityCoords[1]}</p>
+              <p style="margin: 2px 0; font-size: 12px;"><strong>Active Sensors:</strong> ${validSensors.length}</p>
+            </div>
+          </div>
+        `)
 
         validSensors.forEach((sensor) => {
           console.log("[v0] Adding marker for sensor:", sensor.name, "at coordinates:", sensor.coordinates)
@@ -109,6 +139,10 @@ export function SensorMap({ sensors }: SensorMapProps) {
                 return "🌡️"
               case "water_level":
                 return "🚰"
+              case "air_quality":
+                return "🌬️"
+              case "pir_motion":
+                return "👁️"
               default:
                 return "📊"
             }
@@ -191,6 +225,10 @@ export function SensorMap({ sensors }: SensorMapProps) {
     <div className="space-y-4">
       {/* Map Legend */}
       <div className="flex flex-wrap gap-4 text-sm">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-blue-500 rounded"></div>
+          <span>University Hub</span>
+        </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-green-500 rounded-full"></div>
           <span>Normal</span>
